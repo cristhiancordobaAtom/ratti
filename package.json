@@ -1,0 +1,40 @@
+{
+  "name": "ratti",
+  "version": "1.0.0",
+  "description": "Widget de barra de menu/bandeja que notifica nuevos PRs en GitHub, Bitbucket, issues en Jira y menciones en Slack",
+  "main": "src/main.js",
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^43.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.local.ratti",
+    "productName": "Ratti",
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "config.example.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": ["dmg"],
+      "icon": "assets/icon.png"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "assets/icon.png"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

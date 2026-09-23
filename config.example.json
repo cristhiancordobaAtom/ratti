@@ -1,0 +1,41 @@
+{
+  "pollIntervalMinutes": 2,
+
+  "github": {
+    "enabled": true,
+    "token": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "username": "tu-usuario-github",
+    "repos": [
+      "tu-org/tu-repo-1",
+      "tu-org/tu-repo-2"
+    ]
+  },
+
+  "bitbucket": {
+    "enabled": true,
+    "email": "tu-correo@ejemplo.com",
+    "apiToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "workspace": "tu-workspace",
+    "repoSlugs": [
+      "tu-repo-1",
+      "tu-repo-2"
+    ]
+  },
+
+  "slack": {
+    "enabled": true,
+    "userToken": "xoxp-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx",
+    "mentionQuery": "@tu-usuario-slack"
+  },
+
+  "jira": {
+    "enabled": true,
+    "baseUrl": "https://tu-empresa.atlassian.net",
+    "email": "tu-correo@ejemplo.com",
+    "apiToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "projectKeys": [
+      "PROJ1",
+      "PROJ2"
+    ]
+  }
+}

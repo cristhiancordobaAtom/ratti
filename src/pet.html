@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+    -webkit-app-region: drag;
+    cursor: pointer;
+  }
+
+  #pet {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #pet img {
+    width: 78%;
+    height: 78%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+  }
+
+  #badge {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #e0483e;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    -webkit-app-region: no-drag;
+  }
+</style>
+</head>
+<body>
+  <div id="pet">
+    <img id="petImg" src="../assets/pet-idle.png" />
+    <div id="badge">0</div>
+  </div>
+
+  <script>
+    const petImg = document.getElementById("petImg");
+    const badge = document.getElementById("badge");
+    const danceFrames = [0,1,2,3,4,5].map(i => `../assets/pet-dance-${i}.png`);
+    let danceLoop = null;
+    let frameIndex = 0;
+
+    function startDanceAnim() {
+      if (danceLoop) return;
+      danceLoop = setInterval(() => {
+        petImg.src = danceFrames[frameIndex % danceFrames.length];
+        frameIndex++;
+      }, 140);
+    }
+
+    function stopDanceAnim() {
+      if (danceLoop) {
+        clearInterval(danceLoop);
+        danceLoop = null;
+      }
+      petImg.src = "../assets/pet-idle.png";
+    }
+
+    window.petAPI.onDanceState((isDancing) => {
+      if (isDancing) startDanceAnim();
+      else stopDanceAnim();
+    });
+
+    window.petAPI.onCount((count) => {
+      if (count > 0) {
+        badge.textContent = count > 99 ? "99+" : String(count);
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
+    });
+
+    document.getElementById("pet").addEventListener("click", () => {
+      window.petAPI.openPanel();
+    });
+
+    window.petAPI.requestState();
+  </script>
+</body>
+</html>

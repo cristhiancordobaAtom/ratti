@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow: hidden;
+  }
+
+  #panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgba(17, 18, 23, 0.92);
+    backdrop-filter: blur(20px);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.07);
+    color: #f2f2f5;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+
+  /* ---------- Header ---------- */
+  #header {
+    -webkit-app-region: drag;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 14px;
+    flex-shrink: 0;
+  }
+
+  #avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #ececea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  #avatar img { width: 80%; height: 80%; object-fit: contain; }
+
+  #headerText { flex: 1; min-width: 0; }
+  #headerText .title { font-size: 19px; font-weight: 700; }
+  #headerText .subtitle {
+    font-size: 12.5px;
+    opacity: 0.55;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-actions {
+    -webkit-app-region: no-drag;
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: none;
+    background: rgba(255,255,255,0.07);
+    color: #f2f2f4;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.14); }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  /* ---------- Search ---------- */
+  #searchWrap {
+    -webkit-app-region: no-drag;
+    margin: 0 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+  #searchWrap svg { width: 15px; height: 15px; opacity: 0.5; flex-shrink: 0; }
+  #searchInput {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f2f2f4;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  #searchInput::placeholder { color: rgba(242,242,245,0.4); }
+  .kbd {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(242,242,245,0.45);
+    background: rgba(255,255,255,0.07);
+    border-radius: 5px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+  }
+
+  /* ---------- List ---------- */
+  #list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2px 12px 8px;
+  }
+
+  .group {
+    margin-bottom: 4px;
+  }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 6px;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+  .group-header:hover { background: rgba(255,255,255,0.04); }
+
+  .source-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .source-icon svg { width: 16px; height: 16px; }
+  .source-icon.github { background: #14161a; }
+  .source-icon.github svg { fill: #fff; }
+  .source-icon.bitbucket { background: #2684ff; }
+  .source-icon.bitbucket svg { fill: #fff; }
+  .source-icon.jira svg { fill: #2684ff; }
+  .source-icon.slack { background: #4a154b; }
+  .source-icon.slack svg { fill: #fff; }
+
+  .group-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex: 1;
+  }
+
+  .count-pill {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(242,242,245,0.75);
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 2px 9px;
+  }
+
+  .chevron { opacity: 0.45; flex-shrink: 0; transition: transform 0.15s ease; }
+  .chevron svg { width: 15px; height: 15px; }
+  .chevron.collapsed { transform: rotate(-90deg); }
+
+  /* ---------- Repo / project row ---------- */
+  .repo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.045);
+    cursor: pointer;
+  }
+  .repo-row:hover { background: rgba(255,255,255,0.065); }
+  .repo-row .row-icon { opacity: 0.5; flex-shrink: 0; display: flex; }
+  .repo-row .row-icon svg { width: 15px; height: 15px; }
+  .repo-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .star-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    display: flex;
+    cursor: pointer;
+    opacity: 0.35;
+    flex-shrink: 0;
+  }
+  .star-btn:hover { opacity: 0.8; }
+  .star-btn svg { width: 14px; height: 14px; stroke: #f2f2f4; }
+  .star-btn.active svg { fill: #f5c542; stroke: #f5c542; }
+
+  /* ---------- Item (PR/issue) row, dentro de un repo expandido ---------- */
+  .items-wrap { padding: 0 0 6px 14px; }
+  .pr-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 2px;
+  }
+  .pr-item:hover { background: rgba(255,255,255,0.06); }
+  .pr-title { font-size: 12.5px; line-height: 1.35; margin-bottom: 2px; }
+  .pr-meta { font-size: 11px; opacity: 0.55; }
+
+  .focusable.highlighted { background: rgba(255,255,255,0.09); }
+
+  #empty {
+    padding: 30px 14px;
+    font-size: 12.5px;
+    opacity: 0.55;
+    text-align: center;
+  }
+
+  /* ---------- Footer ---------- */
+  #footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-size: 11.5px;
+    color: rgba(242,242,245,0.5);
+  }
+  #footer .footer-left,
+  #footer .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #footer svg { width: 13px; height: 13px; opacity: 0.7; }
+  .footer-right {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 7px;
+    padding: 4px 8px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <div id="header">
+      <div id="avatar"><img src="../assets/pet-idle.png" /></div>
+      <div id="headerText">
+        <div class="title">Ratti</div>
+        <div class="subtitle" id="subtitle">Selecciona un repositorio o proyecto</div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="refreshBtn" title="Actualizar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+        </button>
+        <button class="icon-btn" id="closeBtn" title="Cerrar widget">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="searchWrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" placeholder="Buscar proyectos, repositorios o issues..." />
+      <span class="kbd">⌘K</span>
+    </div>
+
+    <div id="list"></div>
+
+    <div id="footer">
+      <div class="footer-left">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span id="totalLabel">Total: 0 elementos</span>
+      </div>
+      <div class="footer-right">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6.01" y2="10"/><line x1="10" y1="10" x2="10.01" y2="10"/><line x1="14" y1="10" x2="14.01" y2="10"/><line x1="18" y1="10" x2="18.01" y2="10"/><line x1="6" y1="14" x2="14" y2="14"/></svg>
+        <span>↑↓ para navegar</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SOURCE_ICONS = {
+      GitHub: {
+        cls: "github",
+        svg: '<svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>',
+      },
+      Bitbucket: {
+        cls: "bitbucket",
+        svg: '<svg viewBox="0 0 24 24"><path d="M.778 1.213a.768.768 0 00-.768.892l3.263 19.81c.084.5.515.868 1.022.873H19.95a.772.772 0 00.76-.64l3.263-19.83a.768.768 0 00-.768-.892zm14.457 14.428H8.99L7.34 9.428h9.32z"/></svg>',
+      },
+      Jira: {
+        cls: "jira",
+        svg: '<svg viewBox="0 0 24 24"><path d="M11.571 11.513H0a5.218 5.218 0 005.232 5.215h2.13v2.057A5.215 5.215 0 0012.57 24V12.518a1.005 1.005 0 00-1-1.005zm5.723-5.756H5.7a5.218 5.218 0 005.232 5.214h2.129v2.058a5.218 5.218 0 005.215 5.214V6.758a1 1 0 00-.982-1.001zM23.013 0H11.428a5.215 5.215 0 005.215 5.215h2.129v2.057A5.215 5.215 0 0024 12.487V1a1 1 0 00-.987-1z"/></svg>',
+      },
+      Slack: {
+        cls: "slack",
+        svg: '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>',
+      },
+    };
+
+    const ROW_ICON = {
+      GitHub: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>',
+      Bitbucket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>',
+      Jira: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+      Slack: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>',
+    };
+
+    const CHEVRON_SVG =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    const STAR_SVG =
+      '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+    const listEl = document.getElementById("list");
+    const totalLabel = document.getElementById("totalLabel");
+    const searchInput = document.getElementById("searchInput");
+
+    let allPRs = [];
+    const collapsedSources = new Set(); // fuentes colapsadas por el usuario
+    const openRepos = new Set(); // repos/proyectos expandidos (clave: source::repo)
+    const starred = new Set(); // marcados con estrella (solo visual, en memoria)
+    let focusIndex = -1;
+
+    function matchesSearch(pr, q) {
+      if (!q) return true;
+      const haystack = `${pr.title} ${pr.repo} ${pr.author} ${pr.source}`.toLowerCase();
+      return haystack.includes(q);
+    }
+
+    function render() {
+      const q = searchInput.value.trim().toLowerCase();
+      const prs = allPRs.filter((pr) => matchesSearch(pr, q));
+
+      totalLabel.textContent = `Total: ${allPRs.length} elemento${allPRs.length === 1 ? "" : "s"}`;
+
+      listEl.innerHTML = "";
+      focusIndex = -1;
+
+      if (allPRs.length === 0) {
+        const empty = document.createElement("div");
+        empty.id = "empty";
+        empty.textContent = "Sin PRs ni issues abiertos por ahora.";
+        listEl.appendChild(empty);
+        return;
+      }
+
+      if (prs.length === 0) {
+        const empty = document.createElement("div");
+        empty.id = "empty";
+        empty.textContent = "Sin resultados para esa búsqueda.";
+        listEl.appendChild(empty);
+        return;
+      }
+
+      const bySource = {};
+      for (const pr of prs) {
+        if (!bySource[pr.source]) bySource[pr.source] = [];
+        bySource[pr.source].push(pr);
+      }
+
+      for (const source of Object.keys(bySource)) {
+        const sourcePRs = bySource[source];
+        const group = document.createElement("div");
+        group.className = "group";
+
+        const header = document.createElement("div");
+        header.className = "group-header focusable";
+        const isCollapsed = !q && collapsedSources.has(source);
+
+        const iconInfo = SOURCE_ICONS[source];
+        const icon = document.createElement("div");
+        icon.className = `source-icon ${iconInfo ? iconInfo.cls : ""}`;
+        icon.innerHTML = iconInfo ? iconInfo.svg : "";
+
+        const label = document.createElement("div");
+        label.className = "group-label";
+        label.textContent = source;
+
+        const count = document.createElement("div");
+        count.className = "count-pill";
+        count.textContent = sourcePRs.length;
+
+        const chevron = document.createElement("div");
+        chevron.className = `chevron${isCollapsed ? " collapsed" : ""}`;
+        chevron.innerHTML = CHEVRON_SVG;
+
+        header.append(icon, label, count, chevron);
+        header.addEventListener("click", () => {
+          if (collapsedSources.has(source)) collapsedSources.delete(source);
+          else collapsedSources.add(source);
+          render();
+        });
+        group.appendChild(header);
+
+        if (!isCollapsed) {
+          const byRepo = {};
+          for (const pr of sourcePRs) {
+            if (!byRepo[pr.repo]) byRepo[pr.repo] = [];
+            byRepo[pr.repo].push(pr);
+          }
+
+          for (const repo of Object.keys(byRepo)) {
+            const repoPRs = byRepo[repo];
+            const repoKey = `${source}::${repo}`;
+            const isOpen = q ? true : openRepos.has(repoKey);
+
+            const row = document.createElement("div");
+            row.className = "repo-row focusable";
+
+            const rowIcon = document.createElement("div");
+            rowIcon.className = "row-icon";
+            rowIcon.innerHTML = ROW_ICON[source] || "";
+
+            const name = document.createElement("div");
+            name.className = "repo-name";
+            name.textContent = repo;
+
+            const repoCount = document.createElement("div");
+            repoCount.className = "count-pill";
+            repoCount.textContent = repoPRs.length;
+
+            const starBtn = document.createElement("button");
+            starBtn.className = `star-btn${starred.has(repoKey) ? " active" : ""}`;
+            starBtn.innerHTML = STAR_SVG;
+            starBtn.title = "Destacar";
+            starBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              if (starred.has(repoKey)) starred.delete(repoKey);
+              else starred.add(repoKey);
+              render();
+            });
+
+            const repoChevron = document.createElement("div");
+            repoChevron.className = `chevron${isOpen ? "" : " collapsed"}`;
+            repoChevron.innerHTML = CHEVRON_SVG;
+
+            row.append(rowIcon, name, repoCount, starBtn, repoChevron);
+            row.addEventListener("click", () => {
+              if (openRepos.has(repoKey)) openRepos.delete(repoKey);
+              else openRepos.add(repoKey);
+              render();
+            });
+            group.appendChild(row);
+
+            if (isOpen) {
+              const itemsWrap = document.createElement("div");
+              itemsWrap.className = "items-wrap";
+              for (const pr of repoPRs.slice(0, 50)) {
+                const item = document.createElement("div");
+                item.className = "pr-item focusable";
+
+                const title = document.createElement("div");
+                title.className = "pr-title";
+                title.textContent = pr.title;
+
+                const meta = document.createElement("div");
+                meta.className = "pr-meta";
+                meta.textContent = pr.author;
+
+                item.append(title, meta);
+                item.addEventListener("click", () => window.widgetAPI.openPR(pr));
+                itemsWrap.appendChild(item);
+              }
+              group.appendChild(itemsWrap);
+            }
+          }
+        }
+
+        listEl.appendChild(group);
+      }
+    }
+
+    function setHighlight(index) {
+      const els = [...listEl.querySelectorAll(".focusable")];
+      els.forEach((el) => el.classList.remove("highlighted"));
+      if (index < 0 || index >= els.length) {
+        focusIndex = -1;
+        return;
+      }
+      focusIndex = index;
+      const el = els[focusIndex];
+      el.classList.add("highlighted");
+      el.scrollIntoView({ block: "nearest" });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+        return;
+      }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        const els = listEl.querySelectorAll(".focusable");
+        if (els.length === 0) return;
+        e.preventDefault();
+        let next = focusIndex + (e.key === "ArrowDown" ? 1 : -1);
+        if (next < 0) next = els.length - 1;
+        if (next >= els.length) next = 0;
+        setHighlight(next);
+      } else if (e.key === "Enter" && focusIndex >= 0) {
+        const els = listEl.querySelectorAll(".focusable");
+        const el = els[focusIndex];
+        if (el) el.click();
+      }
+    });
+
+    searchInput.addEventListener("input", () => render());
+
+    window.widgetAPI.onPRsUpdated((prs) => {
+      allPRs = prs || [];
+      render();
+    });
+    document.getElementById("closeBtn").addEventListener("click", () => window.widgetAPI.close());
+    document.getElementById("refreshBtn").addEventListener("click", () => window.widgetAPI.refresh());
+    // Pedimos el estado actual de una vez, en vez de esperar al próximo
+    // sondeo automático — evita quedarnos con una foto vieja/incompleta.
+    window.widgetAPI.requestUpdate();
+  </script>
+</body>
+</html>
