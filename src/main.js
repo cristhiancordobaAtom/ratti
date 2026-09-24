@@ -262,9 +262,20 @@ function dismissPR(pr) {
 }
 
 function notifyNewPR(pr) {
+  const isSlack = pr.source === "Slack";
+  const title = isSlack
+    ? "Nuevo mensaje en Slack"
+    : pr.source === "Jira"
+    ? "Nuevo issue asignado en Jira"
+    : `Nuevo PR en ${pr.source}`;
+
+  const body = isSlack
+    ? `${pr.author} (${pr.repo}):\n${pr.title}`
+    : `${pr.title}\n${pr.repo} · ${pr.author}`;
+
   const n = new Notification({
-    title: `Nuevo PR en ${pr.source}`,
-    body: `${pr.title}\n${pr.repo} · ${pr.author}`,
+    title,
+    body,
   });
   n.on("click", () => {
     if (pr.url) shell.openExternal(pr.url);
