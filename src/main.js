@@ -261,6 +261,17 @@ function dismissPR(pr) {
   sendStateToPet();
 }
 
+async function openItemUrl(pr) {
+  if (!pr || !pr.url) return;
+  try {
+    await shell.openExternal(pr.url);
+  } catch (err) {
+    if (pr.webUrl && pr.webUrl !== pr.url) {
+      shell.openExternal(pr.webUrl).catch(() => {});
+    }
+  }
+}
+
 function notifyNewPR(pr) {
   const isSlack = pr.source === "Slack";
   const title = isSlack
@@ -278,7 +289,7 @@ function notifyNewPR(pr) {
     body,
   });
   n.on("click", () => {
-    if (pr.url) shell.openExternal(pr.url);
+    openItemUrl(pr);
     dismissPR(pr);
   });
   n.show();
@@ -330,7 +341,7 @@ function buildTrayMenu() {
         submenu: repoPRs.slice(0, 50).map((pr) => ({
           label: pr.title.slice(0, 80),
           click: () => {
-            if (pr.url) shell.openExternal(pr.url);
+            openItemUrl(pr);
             dismissPR(pr);
           },
         })),
@@ -418,7 +429,7 @@ ipcMain.on("widget:close", () => {
 });
 
 ipcMain.on("widget:open-pr", (event, pr) => {
-  if (pr && pr.url) shell.openExternal(pr.url);
+  openItemUrl(pr);
   dismissPR(pr);
 });
 

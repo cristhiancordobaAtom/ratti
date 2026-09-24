@@ -9,9 +9,10 @@ const RAW_SLACK_ID = /^[UDCGW][A-Z0-9]{6,}$/;
 
 let cachedUserId = null;
 let cachedUsername = null;
+let cachedTeamId = null;
 
 async function getSlackUserInfo(token) {
-  if (cachedUserId) return { userId: cachedUserId, username: cachedUsername };
+  if (cachedUserId) return { userId: cachedUserId, username: cachedUsername, teamId: cachedTeamId };
   try {
     const res = await fetch("https://slack.com/api/auth.test", {
       headers: { Authorization: `Bearer ${token}` },
@@ -20,12 +21,13 @@ async function getSlackUserInfo(token) {
     if (data.ok) {
       cachedUserId = data.user_id;
       cachedUsername = data.user;
-      return { userId: cachedUserId, username: cachedUsername };
+      cachedTeamId = data.team_id;
+      return { userId: cachedUserId, username: cachedUsername, teamId: cachedTeamId };
     }
   } catch (err) {
     console.error("[slack] error obteniendo info de usuario:", err.message);
   }
-  return { userId: null, username: null };
+  return { userId: null, username: null, teamId: null };
 }
 
 function humanizeText(text) {
@@ -50,6 +52,15 @@ function humanizeChannel(channel, author) {
   return `#${channel.name}`;
 }
 
+function buildSlackDeepLink(msg, defaultTeamId) {
+  const teamId = msg.team || defaultTeamId;
+  const channelId = msg.channel ? msg.channel.id : null;
+  if (teamId && channelId && msg.ts) {
+    return `slack://channel?team=${teamId}&id=${channelId}&message=${msg.ts}`;
+  }
+  return msg.permalink || "";
+}
+
 async function fetchSlackMentions(config) {
   if (!config.slack || !config.slack.enabled) return [];
 
@@ -57,7 +68,7 @@ async function fetchSlackMentions(config) {
   if (!userToken) return [];
 
   const headers = { Authorization: `Bearer ${userToken}` };
-  const { userId } = await getSlackUserInfo(userToken);
+  const { userId, teamId } = await getSlackUserInfo(userToken);
 
   // Consultamos tanto mensajes directos ("to:me") como menciones explícitas en canales
   const queries = ["to:me"];
@@ -105,6 +116,7 @@ async function fetchSlackMentions(config) {
       const author = msg.username || (msg.user && msg.user.name) || "desconocido";
       const isDM = !msg.channel || msg.channel.is_im || RAW_SLACK_ID.test(msg.channel.name);
       const repo = humanizeChannel(msg.channel, author);
+      const deepLink = buildSlackDeepLink(msg, teamId);
 
       results.push({
         id: `slack:${msg.channel ? msg.channel.id : "dm"}:${msg.ts}`,
@@ -112,7 +124,8 @@ async function fetchSlackMentions(config) {
         repo,
         title: extractText(msg).slice(0, 140),
         author,
-        url: msg.permalink || "",
+        url: deepLink,
+        webUrl: msg.permalink || "",
         updatedAt: new Date(parseFloat(msg.ts) * 1000).toISOString(),
         role: isDM ? "mensaje directo" : "mención",
       });
