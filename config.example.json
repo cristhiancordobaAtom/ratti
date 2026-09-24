@@ -5,6 +5,7 @@
     "enabled": true,
     "token": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "username": "tu-usuario-github",
+    "onlyReviewRequests": false,
     "repos": [
       "tu-org/tu-repo-1",
       "tu-org/tu-repo-2"
@@ -14,8 +15,10 @@
   "bitbucket": {
     "enabled": true,
     "email": "tu-correo@ejemplo.com",
+    "displayName": "Tu Nombre Completo",
     "apiToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "workspace": "tu-workspace",
+    "onlyReviewRequests": false,
     "repoSlugs": [
       "tu-repo-1",
       "tu-repo-2"
@@ -33,6 +36,7 @@
     "baseUrl": "https://tu-empresa.atlassian.net",
     "email": "tu-correo@ejemplo.com",
     "apiToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "groupByProject": false,
     "projectKeys": [
       "PROJ1",
       "PROJ2"

@@ -73,6 +73,8 @@ sección de cada servicio.
 - **github.username**: tu usuario de GitHub. Se notifican los PRs donde eres
   **autor** o **revisor solicitado**. Si lo dejas vacío, se notifican TODOS
   los PRs abiertos de los repos listados.
+- **github.onlyReviewRequests**: *(opcional, boolean, por defecto `false`)*. Si está en `true`,
+  filtra para mostrar únicamente los PRs donde eres revisor solicitado (excluyendo los que creaste).
 - **github.repos**: lista de repos en formato `"organizacion/repo"`.
 
 **Bitbucket**
@@ -85,6 +87,10 @@ sección de cada servicio.
   `read:account`.
 - **bitbucket.email**: el correo de tu cuenta de Atlassian (para la API REST
   va con el email, no con tu username de Bitbucket).
+- **bitbucket.displayName**: *(opcional)* tu nombre tal cual aparece en Bitbucket
+  (ej. `"Tu Nombre"`), necesario para detectar si eres autor o revisor solicitado.
+- **bitbucket.onlyReviewRequests**: *(opcional, boolean, por defecto `false`)*. Si está en `true`
+  y se configuró `displayName`, solo muestra PRs donde figuras como revisor solicitado.
 - **bitbucket.workspace** y **repoSlugs**: el workspace y los repos a
   monitorear (el slug es el nombre que aparece en la URL del repo).
 
@@ -129,6 +135,9 @@ sección de cada servicio.
   Bitbucket).
 - **jira.projectKeys**: lista de claves de proyecto a monitorear (la que
   aparece como prefijo en los issues, ej. `"PROJ"` en `PROJ-123`).
+- **jira.groupByProject**: *(opcional, boolean, por defecto `false`)*. Si está en `true`,
+  agrupa en el widget y en la bandeja con el formato `"CLAVE · Nombre completo del proyecto"`
+  en vez de solo la clave.
 - Se notifican los issues donde sos el **assignee** y que no están en una
   columna de tipo "Done" (según la categoría de estado del workflow).
 

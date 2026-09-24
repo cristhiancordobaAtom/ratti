@@ -32,8 +32,19 @@ async function fetchGithubPRs(config) {
           Array.isArray(pr.requested_reviewers) &&
           pr.requested_reviewers.some((r) => r.login === username);
 
-        // Si no se configuró username, se incluyen todos los PRs del repo.
-        if (username && !isAuthor && !isRequestedReviewer) continue;
+        const onlyReviewRequests = Boolean(
+          config.github.onlyReviewRequests || config.github.onlyReviewer
+        );
+
+        if (onlyReviewRequests) {
+          // Solo se muestran PRs donde el usuario es revisor solicitado.
+          // Se excluyen los PRs que el mismo usuario creó (isAuthor).
+          if (username && !isRequestedReviewer) continue;
+        } else {
+          // Si no se configuró username, se incluyen todos los PRs del repo.
+          // Si se configuró username, se incluyen donde es autor o revisor solicitado.
+          if (username && !isAuthor && !isRequestedReviewer) continue;
+        }
 
         results.push({
           id: `github:${repo}:${pr.number}`,

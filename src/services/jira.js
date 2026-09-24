@@ -8,6 +8,9 @@ async function fetchJiraPRs(config) {
   if (!config.jira || !config.jira.enabled) return [];
 
   const { baseUrl, email, apiToken, projectKeys } = config.jira;
+  const groupByProject = Boolean(
+    config.jira.groupByProject || config.jira.groupByProjectName
+  );
   if (!baseUrl || !email || !apiToken || !projectKeys || projectKeys.length === 0) {
     return [];
   }
@@ -32,16 +35,26 @@ async function fetchJiraPRs(config) {
     const data = await res.json();
     const issues = data.issues || [];
 
-    return issues.map((issue) => ({
-      id: `jira:${issue.key}`,
-      source: "Jira",
-      repo: issue.fields.project ? issue.fields.project.key : "desconocido",
-      title: `[${issue.key}] ${issue.fields.summary}`,
-      author: issue.fields.assignee ? issue.fields.assignee.displayName : "desconocido",
-      url: `${baseUrl.replace(/\/$/, "")}/browse/${issue.key}`,
-      updatedAt: issue.fields.updated,
-      role: "asignado",
-    }));
+    return issues.map((issue) => {
+      const projectKey = issue.fields.project ? issue.fields.project.key : "desconocido";
+      const projectName = issue.fields.project ? issue.fields.project.name : "";
+      // Si groupByProject está activo, mostramos "KEY · Nombre del proyecto" para que el widget agrupe con nombre legible.
+      // Si está desactivado (false por defecto), dejamos solo projectKey ("KEY").
+      const repoLabel =
+        groupByProject && projectName
+          ? `${projectKey} · ${projectName}`
+          : projectKey;
+      return {
+        id: `jira:${issue.key}`,
+        source: "Jira",
+        repo: repoLabel,
+        title: `[${issue.key}] ${issue.fields.summary}`,
+        author: issue.fields.assignee ? issue.fields.assignee.displayName : "desconocido",
+        url: `${baseUrl.replace(/\/$/, "")}/browse/${issue.key}`,
+        updatedAt: issue.fields.updated,
+        role: "asignado",
+      };
+    });
   } catch (err) {
     console.error("[jira] error consultando issues:", err.message);
     return [];

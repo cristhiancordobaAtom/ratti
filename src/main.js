@@ -426,7 +426,12 @@ app.whenReady().then(() => {
   tray = new Tray(idleImage);
   tray.setToolTip("Ratti");
 
+  // En macOS el clic simple en la barra de menú suele abrirla directamente,
+  // pero también capturamos double-click y el clic derecho con la opción de
+  // "Mostrar widget" al tope del menú contextual, para que siempre haya una
+  // forma de abrir el panel.
   tray.on("click", () => showWidget());
+  tray.on("double-click", () => showWidget());
   tray.on("right-click", () => tray.popUpContextMenu(buildTrayMenu()));
 
   createPetWindow();
@@ -442,14 +447,13 @@ app.whenReady().then(() => {
     }
   }
 
-  // Primera vez que corre ya empaquetada: si no existe un config.json en la
-  // carpeta de datos de usuario, lo creamos a partir del example incluido
-  // en la app, para que el usuario solo tenga que editarlo.
-  if (app.isPackaged && !fs.existsSync(configPath)) {
+  // Si no existe un config.json (en userData si está empaquetada o en la raíz en dev),
+  // lo creamos a partir del example incluido en la app para que el usuario solo tenga que editarlo.
+  if (!fs.existsSync(configPath)) {
     try {
       const exampleSrc = path.join(app.getAppPath(), "config.example.json");
       if (fs.existsSync(exampleSrc)) {
-        fs.mkdirSync(userDataDir, { recursive: true });
+        fs.mkdirSync(path.dirname(configPath), { recursive: true });
         fs.copyFileSync(exampleSrc, configPath);
       }
     } catch (err) {
